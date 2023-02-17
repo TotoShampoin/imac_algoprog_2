@@ -152,7 +152,7 @@ void pousse_file(Liste* liste, int valeur)
 
 int retire_file_noeud(Noeud** noeud) {
     if((*noeud)->suivant != nullptr) {
-        retire_file_noeud(&(*noeud)->suivant);
+        return retire_file_noeud(&(*noeud)->suivant);
     }
     int res = (*noeud)->donnee;
     delete *noeud;
