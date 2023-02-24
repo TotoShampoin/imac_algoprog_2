@@ -6,11 +6,17 @@
 MainWindow* w=nullptr;
 
 void insertionSort(Array& toSort){
-	Array& sorted=w->newArray(toSort.size());
+    Array& sorted = w->newArray(toSort.size());
 
-	// insertion sort from toSort to sorted
-	
-	toSort=sorted; // update the original array
+    for(auto n : toSort) {
+        size_t j;
+        for(j = 0; j < sorted.effectiveSize(); j++) {
+            auto m = sorted[j];
+            if(m > n) break;
+        }
+        sorted.insert(j, n);
+    }
+    toSort = sorted; // update the original array
 }
 
 int main(int argc, char *argv[])

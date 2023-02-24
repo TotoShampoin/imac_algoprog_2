@@ -6,7 +6,14 @@
 MainWindow* w = nullptr;
 
 void selectionSort(Array& toSort){
-	// selectionSort
+    for(size_t i = 0; i < toSort.size(); i++) {
+        // Find minimum
+        unsigned long min = i;
+        for(unsigned long j = i; j < toSort.size(); j++) {
+            if( toSort[min] > toSort[j] ) min = j;
+        }
+        toSort.swap(i, min);
+    }
 }
 
 int main(int argc, char *argv[])
