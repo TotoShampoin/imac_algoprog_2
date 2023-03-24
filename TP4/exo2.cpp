@@ -59,6 +59,9 @@ void processCharFrequences(string data, Array& frequences)
 
     // Your code
     frequences.fill(0);
+    for(auto c : data) {
+        frequences[c]++;
+    }
 }
 
 void HuffmanHeap::insertHeapNode(int heapSize, HuffmanNode* newNode)
@@ -74,6 +77,11 @@ void HuffmanHeap::insertHeapNode(int heapSize, HuffmanNode* newNode)
 
     // Your code
     int i = heapSize;
+    this->set(i, newNode);
+    while(i > 0 && this->get(i)->frequences > this->get((i-1)/2)->frequences) {
+        swap(i, (i-1)/2);
+        i = (i-1)/2;
+    }
 
 }
 
@@ -88,6 +96,13 @@ void buildHuffmanHeap(const Array& frequences, HuffmanHeap& priorityMinHeap, int
     // Your code
     heapSize = 0;
 
+    for(unsigned char i = 0; i < frequences.size(); i++) {
+        auto frequence = frequences[i];
+        if(frequence == 0) continue;
+        HuffmanNode* node = new HuffmanNode { i , frequences[i] };
+        priorityMinHeap.insertHeapNode(i, node);
+        heapSize++;
+    }
 }
 
 void HuffmanHeap::heapify(int heapSize, int nodeIndex)
@@ -98,8 +113,18 @@ void HuffmanHeap::heapify(int heapSize, int nodeIndex)
       * this->get(i): HuffmanNode*  <-> this->get(i)->frequences
       * you can use `this->swap(firstIndex, secondIndex)`
      **/
+    
     // Your code
-
+    int i_max = nodeIndex;
+    for(int i = nodeIndex; i < heapSize; i++) {
+        if(this->get(i)->frequences > this->get(i_max)->frequences) {
+            i_max = i;
+        }
+    }
+    if(i_max != nodeIndex) {
+        swap(nodeIndex, i_max);
+        heapify(heapSize, i_max);
+    }
 }
 
 
@@ -112,6 +137,10 @@ HuffmanNode* HuffmanHeap::extractMinNode(int heapSize)
      **/
 
     // Your code
+    HuffmanNode* node = get(0);
+    swap(0, heapSize-1);
+    heapify(heapSize-1, 0);
+    return node;
 }
 
 HuffmanNode* makeHuffmanSubTree(HuffmanNode* rightNode, HuffmanNode* leftNode)
@@ -123,7 +152,11 @@ HuffmanNode* makeHuffmanSubTree(HuffmanNode* rightNode, HuffmanNode* leftNode)
      * Return the new HuffmanNode* parent
      **/
     // Your code
-    return new HuffmanNode('\0');
+    HuffmanNode* parent = new HuffmanNode('\0');
+    parent->right = rightNode;
+    parent->left = leftNode;
+    parent->frequences = rightNode->frequences + leftNode->frequences;
+    return parent;
 }
 
 HuffmanNode* buildHuffmanTree(HuffmanHeap& priorityMinHeap, int heapSize)
@@ -136,7 +169,18 @@ HuffmanNode* buildHuffmanTree(HuffmanHeap& priorityMinHeap, int heapSize)
      **/
 
     // Your code
-    return new HuffmanNode('?');
+    HuffmanNode* tmpParent = nullptr;
+    HuffmanNode* tmpChild[2] = {nullptr, nullptr};
+    int counter = 0;
+    while(heapSize > 1) {
+        tmpChild[counter++] = priorityMinHeap.extractMinNode(heapSize--);
+        if(counter == 2) {
+            counter -= 2;
+            tmpParent = makeHuffmanSubTree(tmpChild[0], tmpChild[1]);
+            priorityMinHeap.insertHeapNode(heapSize++, tmpParent);
+        }
+    }
+    return priorityMinHeap[0];
 }
 
 void HuffmanNode::processCodes(const std::string& baseCode)
@@ -150,6 +194,12 @@ void HuffmanNode::processCodes(const std::string& baseCode)
      **/
 
     // Your code
+    if(isLeaf()) {
+        code = baseCode;
+        return;
+    }
+    left->processCodes(baseCode + "0");
+    right->processCodes(baseCode + "1");
 }
 
 void HuffmanNode::fillCharactersArray(std::string charactersCodes[])
@@ -181,6 +231,10 @@ string huffmanEncode(const string& toEncode, HuffmanNode* huffmanTree)
     huffmanTree->fillCharactersArray(charactersCodes);
     string encoded = "";
 
+    for(unsigned char c : toEncode) {
+        encoded += charactersCodes[c];
+    }
+
     return encoded;
 }
 
@@ -194,6 +248,23 @@ string huffmanDecode(const string& toDecode, const HuffmanNode& huffmanTreeRoot)
      **/
     // Your code
     string decoded = "";
+    const HuffmanNode* tmp = nullptr;
+
+    tmp = &huffmanTreeRoot;
+    for(auto c : toDecode) {
+        switch (c) {
+        case '0':
+            tmp = tmp->left;
+            break;
+        case '1':
+            tmp = tmp->right;
+            break;
+        }
+        if(tmp->isLeaf()) {
+            decoded += tmp->character;
+            tmp = &huffmanTreeRoot;
+        }
+    }
 
     return decoded;
 }

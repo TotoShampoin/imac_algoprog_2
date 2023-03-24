@@ -21,8 +21,8 @@ int Heap::rightChildIndex(int nodeIndex)
 
 void Heap::insertHeapNode(int heapSize, int value)
 {
-	// use (*this)[i] or this->get(i) to get a value at index i
-	int i = heapSize;
+    // use (*this)[i] or this->get(i) to get a value at index i
+    int i = heapSize;
     this->get(i) = value;
     while(i > 0 && this->get(i) > this->get((i-1)/2)) {
         swap(i, (i-1)/2);
