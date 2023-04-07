@@ -23,9 +23,9 @@ void Heap::insertHeapNode(int heapSize, int value)
 {
     // use (*this)[i] or this->get(i) to get a value at index i
     int i = heapSize;
-    this->get(i) = value;
+    this->set(i, value);
     while(i > 0 && this->get(i) > this->get((i-1)/2)) {
-        swap(i, (i-1)/2);
+        this->swap(i, (i-1)/2);
         i = (i-1)/2;
     }
 }
@@ -33,13 +33,11 @@ void Heap::insertHeapNode(int heapSize, int value)
 void Heap::heapify(int heapSize, int nodeIndex)
 {
 	// use (*this)[i] or this->get(i) to get a value at index i
-	int i_max = nodeIndex;
-    for(int i = nodeIndex; i < heapSize; i++) {
-        if(this->get(i) > this->get(i_max)) {
-            i_max = i;
-        }
-    }
-    if(i_max != nodeIndex) {
+    int i_left = this->leftChildIndex(nodeIndex);
+    int i_right = this->rightChildIndex(nodeIndex);
+    if(i_left >= heapSize || i_right >= heapSize) return;
+    int i_max = (this->get(i_left) < this->get(i_right)) ? i_right : i_left;
+    if(this->get(nodeIndex) < this->get(i_max)) {
         swap(nodeIndex, i_max);
         heapify(heapSize, i_max);
     }
@@ -47,10 +45,9 @@ void Heap::heapify(int heapSize, int nodeIndex)
 
 void Heap::buildHeap(Array& numbers)
 {
-    int i = 0;
+    int size = 0;
     for(auto num : numbers) {
-        insertHeapNode(i, num);
-        i++;
+        insertHeapNode(size++, num);
     }
 }
 

@@ -23,7 +23,16 @@ std::vector<string> TP5::names(
 unsigned long int hash(string key)
 {
     // return an unique hash id from key
-    return 0;
+    unsigned long h = 0;
+    unsigned long p = 1;
+    for(unsigned long i = 0; i < key.length(); i++) {
+        p <<= 7; // *= 128
+    }
+    for(unsigned char c : key) {
+        h += c * p;
+        p >>= 7; // /= 128
+    }
+    return h;
 }
 
 struct MapNode : public BinaryTree
@@ -52,7 +61,17 @@ struct MapNode : public BinaryTree
      */
     void insertNode(MapNode* node)
     {
-
+        MapNode** next = nullptr;
+        if(node->key_hash > this->key_hash) {
+            next = &this->right;
+        } else {
+            next = &this->left;
+        }
+        if(!*next) {
+            *next = node;
+            return;
+        }
+        (*next)->insertNode(node);
     }
 
     void insertNode(string key, int value)
@@ -62,8 +81,8 @@ struct MapNode : public BinaryTree
 
     virtual ~MapNode() {}
     QString toString() const override {return QString("%1:\n%2").arg(QString::fromStdString(key)).arg(value);}
-    Node* get_left_child() const {return left;}
-    Node* get_right_child() const {return right;}
+    Node* get_left_child() const override {return left;}
+    Node* get_right_child() const override {return right;}
 };
 
 struct Map
@@ -79,7 +98,12 @@ struct Map
      */
     void insert(string key, int value)
     {
-
+        MapNode* node = new MapNode(key, value);
+        if(!this->root) {
+            this->root = node;
+            return;
+        }
+        this->root->insertNode(node);
     }
 
     /**
@@ -89,7 +113,18 @@ struct Map
      */
     int get(string key)
     {
-        return -1;
+        auto search = hash(key);
+        auto node = this->root;
+        if(!node) return -1;
+        while(node && node->key_hash != search) {
+            if(search < node->key_hash) {
+                node = node->left;
+            } else {
+                node = node->right;
+            }
+        }
+        if(!node) return -1;
+        return node->value;
     }
 
     MapNode* root;
@@ -107,15 +142,9 @@ int main(int argc, char *argv[])
         if (rand() % 3 == 0)
         {
             map.insert(name, rand() % 21);
+            qDebug("map[\"%s\"]=%d\n", name.c_str(), map.get(name.c_str()));
         }
     }
-
-    printf("map[\"Margot\"]=%d\n", map.get("Margot"));
-    printf("map[\"Jolan\"]=%d\n", map.get("Jolan"));
-    printf("map[\"Lucas\"]=%d\n", map.get("Lucas"));
-    printf("map[\"Clemence\"]=%d\n", map.get("Clemence"));
-    printf("map[\"Yolo\"]=%d\n", map.get("Yolo"));
-    printf("map[\"Tanguy\"]=%d\n", map.get("Tanguy"));
 
 
     QApplication a(argc, argv);

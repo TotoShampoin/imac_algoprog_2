@@ -75,10 +75,12 @@ void HuffmanHeap::insertHeapNode(int heapSize, HuffmanNode* newNode)
       * you can use `this->swap(firstIndex, secondIndex)`
      **/
 
+    // TODO: fix this
+
     // Your code
     int i = heapSize;
     this->set(i, newNode);
-    while(i > 0 && this->get(i)->frequences > this->get((i-1)/2)->frequences) {
+    while(i > 0 && this->get(i)->frequences < this->get((i-1)/2)->frequences) {
         swap(i, (i-1)/2);
         i = (i-1)/2;
     }
@@ -96,13 +98,23 @@ void buildHuffmanHeap(const Array& frequences, HuffmanHeap& priorityMinHeap, int
     // Your code
     heapSize = 0;
 
-    for(unsigned char i = 0; i < frequences.size(); i++) {
+    for(int i = 0; i < frequences.size(); i++) {
         auto frequence = frequences[i];
         if(frequence == 0) continue;
-        HuffmanNode* node = new HuffmanNode { i , frequences[i] };
-        priorityMinHeap.insertHeapNode(i, node);
+        HuffmanNode* node = new HuffmanNode { (unsigned char)i , frequence };
+        priorityMinHeap.insertHeapNode(heapSize, node);
         heapSize++;
     }
+}
+
+int leftChildIndex(int nodeIndex)
+{
+    return nodeIndex * 2 + 1;
+}
+
+int rightChildIndex(int nodeIndex)
+{
+    return nodeIndex * 2 + 2;
 }
 
 void HuffmanHeap::heapify(int heapSize, int nodeIndex)
@@ -115,15 +127,13 @@ void HuffmanHeap::heapify(int heapSize, int nodeIndex)
      **/
     
     // Your code
-    int i_max = nodeIndex;
-    for(int i = nodeIndex; i < heapSize; i++) {
-        if(this->get(i)->frequences > this->get(i_max)->frequences) {
-            i_max = i;
-        }
-    }
-    if(i_max != nodeIndex) {
-        swap(nodeIndex, i_max);
-        heapify(heapSize, i_max);
+    int i_left = leftChildIndex(nodeIndex);
+    int i_right = rightChildIndex(nodeIndex);
+    if(i_left >= heapSize || i_right >= heapSize) return;
+    int i_min = (this->get(i_left)->frequences > this->get(i_right)->frequences) ? i_right : i_left;
+    if(this->get(nodeIndex)->frequences > this->get(i_min)->frequences) {
+        swap(nodeIndex, i_min);
+        heapify(heapSize, i_min);
     }
 }
 
@@ -171,14 +181,11 @@ HuffmanNode* buildHuffmanTree(HuffmanHeap& priorityMinHeap, int heapSize)
     // Your code
     HuffmanNode* tmpParent = nullptr;
     HuffmanNode* tmpChild[2] = {nullptr, nullptr};
-    int counter = 0;
     while(heapSize > 1) {
-        tmpChild[counter++] = priorityMinHeap.extractMinNode(heapSize--);
-        if(counter == 2) {
-            counter -= 2;
-            tmpParent = makeHuffmanSubTree(tmpChild[0], tmpChild[1]);
-            priorityMinHeap.insertHeapNode(heapSize++, tmpParent);
-        }
+        tmpChild[0] = priorityMinHeap.extractMinNode(heapSize--);
+        tmpChild[1] = priorityMinHeap.extractMinNode(heapSize--);
+        tmpParent = makeHuffmanSubTree(tmpChild[0], tmpChild[1]);
+        priorityMinHeap.insertHeapNode(heapSize++, tmpParent);
     }
     return priorityMinHeap[0];
 }

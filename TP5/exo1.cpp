@@ -18,12 +18,13 @@ std::vector<string> TP5::names(
 int HashTable::hash(std::string element)
 {
     // use this->size() to get HashTable size
-    return 0;
+    return element[element.size() - 1] % this->size();
 }
 
 void HashTable::insert(std::string element)
 {
     // use (*this)[i] or this->get(i) to get a value at index i
+    this->set(this->hash(element), element);
 }
 
 /**
@@ -34,13 +35,15 @@ void HashTable::insert(std::string element)
  */
 void buildHashTable(HashTable& table, std::string* names, int namesCount)
 {
-
+    for(int i = 0; i < namesCount; i++) {
+        table.insert(names[i]);
+    }
 }
 
 bool HashTable::contains(std::string element)
 {
     // Note: Do not use iteration (for, while, ...)
-    return false;
+    return this->get(this->hash(element)) == element;
 }
 
 
